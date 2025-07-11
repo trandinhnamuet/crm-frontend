@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, message, Space } from 'antd';
+import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import RouteInstanceForm from './RouteInstanceForm';
 import { getRouteInstances, createRouteInstance, updateRouteInstance, deleteRouteInstance } from './RouteInstanceApi';
 import type { RouteInstance } from './RouteInstanceApi';
+const { Title } = Typography;
 
 export default function RouteInstanceCrudPage() {
   const [routeInstances, setRouteInstances] = useState<RouteInstance[]>([]);
@@ -80,43 +81,46 @@ export default function RouteInstanceCrudPage() {
         <Space>
           <Button onClick={() => openEdit(record)} type="link" icon={<EditOutlined />} />
           <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
+          <Button onClick={() => window.location.href = `/route-instance-detail/${record.id}`} type="link">View</Button>
         </Space>
       ),
     },
   ];
 
   return (
-    <div className="fixed inset-0 bg-white overflow-auto">
-      <div className="mx-auto min-h-screen py-8 px-2">
-        <h2 className="text-3xl font-bold text-center mb-8">Quản lý Route Instance</h2>
-        <div className="flex justify-end mb-4">
+    <Card style={{ margin: 24 }} bordered={false}>
+      <Row justify="center" align="middle">
+        <Col span={24}>
+          <Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>Quản lý Đi Tuyến</Title>
+        </Col>
+      </Row>
+      <Row justify="end" style={{ marginBottom: 16 }}>
+        <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm route instance</Button>
+        </Col>
+      </Row>
+      <Table
+        columns={columns}
+        dataSource={routeInstances}
+        rowKey="id"
+        loading={loading}
+        bordered
+        pagination={{ pageSize: 12 }}
+        scroll={{ x: 900 }}
+      />
+      <Modal
+        open={modalOpen}
+        title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật route instance' : 'Thêm route instance'}</span>}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        centered
+        styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
+      >
+        <div className="p-6">
+          <RouteInstanceForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
         </div>
-        <div className="bg-white rounded shadow p-2 overflow-x-auto">
-          <Table
-            columns={columns}
-            dataSource={routeInstances}
-            rowKey="id"
-            loading={loading}
-            bordered
-            pagination={{ pageSize: 12 }}
-            scroll={{ x: 900 }}
-          />
-        </div>
-        <Modal
-          open={modalOpen}
-          title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật route instance' : 'Thêm route instance'}</span>}
-          onCancel={() => setModalOpen(false)}
-          footer={null}
-          destroyOnClose
-          centered
-          styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
-        >
-          <div className="p-6">
-            <RouteInstanceForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
-          </div>
-        </Modal>
-      </div>
-    </div>
+      </Modal>
+    </Card>
   );
 }

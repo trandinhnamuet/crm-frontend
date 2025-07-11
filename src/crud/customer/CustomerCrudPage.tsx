@@ -1,9 +1,10 @@
 import type { Customer } from './CustomerApi';
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, message, Space } from 'antd';
+import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import CustomerForm from './CustomerForm';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from './CustomerApi';
+const { Title } = Typography;
 
 export default function CustomerCrudPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -68,21 +69,27 @@ export default function CustomerCrudPage() {
 
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Mã KH', dataIndex: 'code', key: 'code' },
-    { title: 'Tên KH', dataIndex: 'name', key: 'name' },
-    { title: 'Địa chỉ', dataIndex: 'address', key: 'address' },
+    { title: 'Mã khách hàng', dataIndex: 'code', key: 'code' },
+    { title: 'Tên khách hàng', dataIndex: 'name', key: 'name' },
     { title: 'SĐT', dataIndex: 'phone_number', key: 'phone_number' },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Ghi chú', dataIndex: 'note', key: 'note' },
-    { title: 'ID Ảnh', dataIndex: 'image_id', key: 'image_id' },
-    { title: 'Lat', dataIndex: 'latitude', key: 'latitude' },
-    { title: 'Lng', dataIndex: 'longitude', key: 'longitude' },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'address',
+      key: 'address',
+      render: (_: string, record: Customer) => {
+        const { latitude, longitude, address } = record;
+        if (latitude && longitude) {
+          const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+          return <a href={url} target="_blank" rel="noopener noreferrer">{address}</a>;
+        }
+        return address;
+      },
+    },
+    { title: 'Vĩ độ', dataIndex: 'latitude', key: 'latitude' },
+    { title: 'Kinh độ', dataIndex: 'longitude', key: 'longitude' },
     { title: 'Người tạo', dataIndex: 'created_by', key: 'created_by' },
-    { title: 'Tạo lúc', dataIndex: 'created_at', key: 'created_at', render: (v: string) => v ? new Date(v).toLocaleString() : '' },
-    { title: 'Người cập nhật', dataIndex: 'updated_by', key: 'updated_by' },
-    { title: 'Cập nhật lúc', dataIndex: 'updated_at', key: 'updated_at', render: (v: string) => v ? new Date(v).toLocaleString() : '' },
-    { title: 'Người xóa', dataIndex: 'deleted_by', key: 'deleted_by' },
-    { title: 'Xóa lúc', dataIndex: 'deleted_at', key: 'deleted_at', render: (v: string) => v ? new Date(v).toLocaleString() : '' },
     { title: 'Hoạt động', dataIndex: 'is_active', key: 'is_active', render: (v: boolean) => v ? '✔️' : '❌' },
     {
       title: 'Actions',
@@ -97,37 +104,39 @@ export default function CustomerCrudPage() {
   ];
 
   return (
-    <div className="fixed inset-0 bg-white overflow-auto">
-      <div className="mx-auto min-h-screen py-8 px-2">
-        <h2 className="text-3xl font-bold text-center mb-8">Quản lý Khách hàng</h2>
-        <div className="flex justify-end mb-4">
+    <Card style={{ margin: 24 }} bordered={false}>
+      <Row justify="center" align="middle">
+        <Col span={24}>
+          <Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>Quản lý Khách hàng</Title>
+        </Col>
+      </Row>
+      <Row justify="end" style={{ marginBottom: 16 }}>
+        <Col>
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm khách hàng</Button>
+        </Col>
+      </Row>
+      <Table
+        columns={columns}
+        dataSource={customers}
+        rowKey="id"
+        loading={loading}
+        bordered
+        pagination={{ pageSize: 12 }}
+        scroll={{ x: 1200 }}
+      />
+      <Modal
+        open={modalOpen}
+        title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật khách hàng' : 'Thêm khách hàng'}</span>}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        centered
+        styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
+      >
+        <div className="p-6">
+          <CustomerForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
         </div>
-        <div className="bg-white rounded shadow p-2 overflow-x-auto">
-          <Table
-            columns={columns}
-            dataSource={customers}
-            rowKey="id"
-            loading={loading}
-            bordered
-            pagination={{ pageSize: 12 }}
-            scroll={{ x: 1200 }}
-          />
-        </div>
-        <Modal
-          open={modalOpen}
-          title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật khách hàng' : 'Thêm khách hàng'}</span>}
-          onCancel={() => setModalOpen(false)}
-          footer={null}
-          destroyOnClose
-          centered
-          styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
-        >
-          <div className="p-6">
-            <CustomerForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
-          </div>
-        </Modal>
-      </div>
-    </div>
+      </Modal>
+    </Card>
   );
 }

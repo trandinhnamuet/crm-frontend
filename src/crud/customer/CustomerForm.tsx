@@ -33,9 +33,6 @@ export default function CustomerForm({ initial = {}, onSubmit, onCancel }: Custo
       <Form.Item name="name" label="Tên khách hàng">
         <Input placeholder="Tên khách hàng" />
       </Form.Item>
-      <Form.Item name="address" label="Địa chỉ">
-        <Input placeholder="Địa chỉ" />
-      </Form.Item>
       <Form.Item name="phone_number" label="Số điện thoại">
         <Input placeholder="Số điện thoại" />
       </Form.Item>
@@ -45,8 +42,9 @@ export default function CustomerForm({ initial = {}, onSubmit, onCancel }: Custo
       <Form.Item name="note" label="Ghi chú">
         <Input placeholder="Ghi chú" />
       </Form.Item>
-      <Form.Item name="image_id" label="ID ảnh đại diện">
-        <InputNumber min={1} style={{ width: '100%' }} />
+      {/* Bỏ trường ID ảnh đại diện */}
+      <Form.Item name="address" label="Địa chỉ">
+        <Input placeholder="Địa chỉ" />
       </Form.Item>
       <Form.Item name="latitude" label="Vĩ độ">
         <InputNumber style={{ width: '100%' }} />
@@ -54,24 +52,8 @@ export default function CustomerForm({ initial = {}, onSubmit, onCancel }: Custo
       <Form.Item name="longitude" label="Kinh độ">
         <InputNumber style={{ width: '100%' }} />
       </Form.Item>
-      <Form.Item name="created_by" label="ID người tạo">
-        <InputNumber min={1} style={{ width: '100%' }} />
-      </Form.Item>
-      <Form.Item name="created_at" label="Thời điểm tạo">
-        <Input placeholder="YYYY-MM-DD HH:mm:ss" />
-      </Form.Item>
-      <Form.Item name="updated_by" label="ID người cập nhật">
-        <InputNumber min={1} style={{ width: '100%' }} />
-      </Form.Item>
-      <Form.Item name="updated_at" label="Thời điểm cập nhật">
-        <Input placeholder="YYYY-MM-DD HH:mm:ss" />
-      </Form.Item>
-      <Form.Item name="deleted_by" label="ID người xóa">
-        <InputNumber min={1} style={{ width: '100%' }} />
-      </Form.Item>
-      <Form.Item name="deleted_at" label="Thời điểm xóa">
-        <Input placeholder="YYYY-MM-DD HH:mm:ss" />
-      </Form.Item>
+      {/* Bỏ trường ID người tạo */}
+      {/* Bỏ các trường thời điểm tạo, id người cập nhật, thời điểm cập nhật, thời điểm xóa, id người xóa */}
       <Form.Item name="is_active" label="Hoạt động" valuePropName="checked" initialValue={true}>
         <Switch />
       </Form.Item>
