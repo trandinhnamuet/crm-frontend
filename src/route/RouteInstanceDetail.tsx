@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Typography, Spin, Upload, Button as AntButton } from 'antd';
-import { CameraOutlined, UploadOutlined } from '@ant-design/icons';
+import { Card, Typography, Spin, Upload, Button as AntButton } from 'antd';
+import { CameraOutlined } from '@ant-design/icons';
 const { Title } = Typography;
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyB8ayzTBAkoH_jK_lFe9iHaOX1K3L5NVMw";

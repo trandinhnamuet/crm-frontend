@@ -5,7 +5,6 @@ import './App.css';
 // Add types for google.maps to avoid TypeScript errors
 type GoogleMap = any;
 type GoogleMarker = any;
-type GoogleInfoWindow = any;
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyB8ayzTBAkoH_jK_lFe9iHaOX1K3L5NVMw";
 console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY);

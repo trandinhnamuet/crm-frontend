@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getUsers, deleteUser } from './UserApi';
 import type User from './User';
 
