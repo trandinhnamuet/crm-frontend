@@ -6,7 +6,7 @@ import './App.css';
 type GoogleMap = any;
 type GoogleMarker = any;
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyB8ayzTBAkoH_jK_lFe9iHaOX1K3L5NVMw";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY);
 
 export default function App() {

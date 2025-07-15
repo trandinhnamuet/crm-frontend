@@ -19,6 +19,8 @@ export interface Customer {
 }
 
 const API_URL = `${import.meta.env.VITE_API_URL}/customers`;
+console.log("Customer API URL:", API_URL);
+console.log(import.meta)
 
 export async function getCustomers(): Promise<Customer[]> {
   const res = await fetch(API_URL);

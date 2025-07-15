@@ -3,7 +3,7 @@ import { Card, Typography, Spin, Upload, Button as AntButton } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
 const { Title } = Typography;
 
-const GOOGLE_MAPS_API_KEY = "AIzaSyB8ayzTBAkoH_jK_lFe9iHaOX1K3L5NVMw";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RouteInstanceDetail() {
   // Tọa độ gốc để tính khoảng cách
