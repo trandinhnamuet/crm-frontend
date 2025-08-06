@@ -9,12 +9,17 @@ import Register from './auth/Register';
 import Login from './auth/Login';
 import AppLayout from './AppLayout';
 import RouteInstanceDetail from './route/RouteInstanceDetail';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppLayout><Outlet /></AppLayout>}>
+        <Route element={
+          <ProtectedRoute>
+            <AppLayout><Outlet /></AppLayout>
+          </ProtectedRoute>
+        }>
           <Route path="/" element={<App />} />
           <Route path="/user" element={<UserCrudPage />} />
           <Route path="/route-template" element={<RouteTemplateCrudPage />} />

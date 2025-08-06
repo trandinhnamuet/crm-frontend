@@ -1,6 +1,6 @@
-import { Layout, Menu, Button } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
-import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { Layout, Menu, Button, Dropdown } from 'antd';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useUser } from './context/UserContext';
 
@@ -16,8 +16,24 @@ const menuItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+
+  const handleLogout = () => {
+    localStorage.removeItem('userId');
+    setUser(null);
+    navigate('/login');
+  };
+
+  const userMenuItems = [
+    {
+      key: 'logout',
+      label: 'Đăng xuất',
+      icon: <LogoutOutlined />,
+      onClick: handleLogout,
+    },
+  ];
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
@@ -50,9 +66,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <span>CRM Application</span>
           </div>
           {user && (
-            <span style={{ fontSize: 16, fontWeight: 400, color: '#1677ff' }}>
-              Xin chào, {user.fullname}
-            </span>
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+              <Button type="text" style={{ fontSize: 16, fontWeight: 400, color: '#1677ff' }}>
+                <UserOutlined style={{ marginRight: 8 }} />
+                {user.fullname}
+              </Button>
+            </Dropdown>
           )}
         </Header>
         <Content style={{ margin: '24px', background: '#fff', borderRadius: 8, padding: 24 }}>

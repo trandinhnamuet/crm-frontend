@@ -14,13 +14,19 @@ export type User = {
 type UserContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
+  loading: boolean;
 };
 
 
-const UserContext = createContext<UserContextType>({ user: null, setUser: () => {} });
+const UserContext = createContext<UserContextType>({ 
+  user: null, 
+  setUser: () => {}, 
+  loading: true 
+});
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Khi app khởi chạy, kiểm tra localStorage userId và fetch user nếu có
   useEffect(() => {
@@ -31,7 +37,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (data) setUser(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          // Nếu có lỗi, xóa userId khỏi localStorage
+          localStorage.removeItem("userId");
+          setLoading(false);
         });
+    } else {
+      setLoading(false);
     }
   }, []);
 
@@ -45,7 +59,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     console.log({ id, username, fullname, phone_number, date_of_birth, email, image_id, created_at });
   };
 
-  return <UserContext.Provider value={{ user, setUser }}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={{ user, setUser, loading }}>{children}</UserContext.Provider>;
 }
 
 export function useUser() {
