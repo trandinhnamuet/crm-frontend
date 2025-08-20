@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Spin, Upload, Button as AntButton } from 'antd';
+import { Card, Typography, Spin, Upload, Button } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
-import Button from 'antd/lib/button';
 const { Title } = Typography;
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -169,7 +168,7 @@ export default function RouteInstanceDetail() {
             gmap.fitBounds(bounds);
             // Nếu có nhiều marker, giảm zoom đi 1 để tránh bị sát rìa
             if (customers.filter(c => c.latitude && c.longitude).length > 1) {
-              const listener = (window as any).google.maps.event.addListenerOnce(gmap, 'bounds_changed', function() {
+              (window as any).google.maps.event.addListenerOnce(gmap, 'bounds_changed', function() {
                 gmap.setZoom(gmap.getZoom() - 1);
               });
             }
@@ -265,28 +264,30 @@ export default function RouteInstanceDetail() {
                 }}
                 disabled={uploading}
               >
-                <AntButton
+                <Button
                   icon={<CameraOutlined />}
                   type="primary"
                   style={{ marginTop: 8, width: '100%' }}
                   loading={uploading}
-                >Chụp/Chọn ảnh</AntButton>
+                >Chụp/Chọn ảnh</Button>
               </Upload>
               {imageUrl && (
                 <img src={imageUrl} alt="Ảnh" style={{ width: '100%', marginTop: 8, borderRadius: 8 }} />
               )}
             </div>
             <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-              <button
-                style={{ flex: 1, background: '#52c41a', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 0', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
+              <Button
+                type="primary"
+                style={{ flex: 1, background: '#52c41a', borderColor: '#52c41a', fontWeight: 600, fontSize: 16, padding: '10px 0' }}
                 onClick={() => { alert('Checkin thành công!'); setModalOpen(false); }}
                 disabled={uploading}
-              >Checkin</button>
-              <button
-                style={{ flex: 1, background: '#1677ff', color: '#fff', border: 'none', borderRadius: 6, padding: '10px 0', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
+              >Checkin</Button>
+              <Button
+                type="primary"
+                style={{ flex: 1, background: '#1677ff', borderColor: '#1677ff', fontWeight: 600, fontSize: 16, padding: '10px 0' }}
                 onClick={() => { alert('Checkout thành công!'); setModalOpen(false); }}
                 disabled={uploading}
-              >Checkout</button>
+              >Checkout</Button>
             </div>
           </div>
         </div>
