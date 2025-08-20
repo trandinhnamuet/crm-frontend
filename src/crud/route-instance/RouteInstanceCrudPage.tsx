@@ -15,7 +15,8 @@ export default function RouteInstanceCrudPage() {
   async function fetchRouteInstances() {
     setLoading(true);
     try {
-      setRouteInstances(await getRouteInstances());
+      const data = await getRouteInstances();
+      setRouteInstances(data.sort((a, b) => b.id - a.id));
     } catch (e: any) {
       message.error(e.message || 'Lỗi tải danh sách route instance');
     }
@@ -70,6 +71,9 @@ export default function RouteInstanceCrudPage() {
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'ID mẫu lộ trình', dataIndex: 'route_template_id', key: 'route_template_id' },
+    { title: 'Tên lộ trình', key: 'route_template_name', render: (_: any, record: RouteInstance) => record.route_template?.name || '' },
+    { title: 'Code', key: 'route_template_code', render: (_: any, record: RouteInstance) => record.route_template?.code || '' },
+    { title: 'Repeat type', key: 'route_template_repeat_type', render: (_: any, record: RouteInstance) => record.route_template?.repeat_type || '' },
     { title: 'Ngày bắt đầu', dataIndex: 'start_date', key: 'start_date' },
     { title: 'Ngày kết thúc', dataIndex: 'end_date', key: 'end_date' },
     { title: 'Đã hoàn thành', dataIndex: 'is_finished', key: 'is_finished', render: (v: boolean) => v ? '✔️' : '❌' },
@@ -121,6 +125,7 @@ export default function RouteInstanceCrudPage() {
           <RouteInstanceForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
         </div>
       </Modal>
+      <Button onClick={() => console.log(routeInstances)}>Log Route Instances</Button>
     </Card>
   );
 }

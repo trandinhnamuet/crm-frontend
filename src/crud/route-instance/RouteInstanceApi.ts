@@ -1,6 +1,25 @@
+
+export interface RouteTemplate {
+  id: number;
+  code: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  repeat_type: string;
+  repeat_on: number;
+  created_by: number | null;
+  created_at: string | null;
+  updated_by: number | null;
+  updated_at: string | null;
+  deleted_by: number | null;
+  deleted_at: string | null;
+  is_active: boolean;
+}
+
 export interface RouteInstance {
   id: number;
   route_template_id: number;
+  route_template: RouteTemplate;
   start_date: string;
   end_date?: string;
   is_finished: boolean;

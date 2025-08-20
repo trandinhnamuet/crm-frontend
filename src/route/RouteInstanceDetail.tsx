@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Typography, Spin, Upload, Button as AntButton } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
+import Button from 'antd/lib/button';
 const { Title } = Typography;
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -33,6 +34,15 @@ export default function RouteInstanceDetail() {
   const [lng, setLng] = useState<number | null>(null);
   const [distances, setDistances] = useState<{[id: number]: string}>({});
   const mapRef = React.useRef<HTMLDivElement>(null);
+  const [userLocation, setUserLocation] = useState<{ lat: number, lng: number } | null>(null);
+  // Lấy vị trí hiện tại của người dùng
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      });
+    }
+  }, []);
 
   // Get routeInstanceId from URL
   const routeInstanceId = window.location.pathname.split('/').pop();
@@ -103,6 +113,7 @@ export default function RouteInstanceDetail() {
             center: { lat, lng },
             zoom: 13,
           });
+          const bounds = new (window as any).google.maps.LatLngBounds();
           customers.forEach((c) => {
             if (c.latitude && c.longitude) {
               let icon = undefined;
@@ -122,6 +133,7 @@ export default function RouteInstanceDetail() {
                 title: c.name,
                 icon,
               });
+              bounds.extend({ lat: c.latitude, lng: c.longitude });
               const infowindow = new (window as any).google.maps.InfoWindow({
                 content: `<b>${c.name}</b><br/>${c.address}`,
               });
@@ -130,12 +142,44 @@ export default function RouteInstanceDetail() {
               marker.addListener("click", () => infowindow.open(gmap, marker));
             }
           });
+          // Cắm marker vị trí hiện tại của user
+          if (userLocation) {
+            const userMarker = new (window as any).google.maps.Marker({
+              position: userLocation,
+              map: gmap,
+              title: 'Vị trí của bạn',
+              icon: {
+                path: (window as any).google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+                scale: 7,
+                fillColor: '#ff4d4f',
+                fillOpacity: 1,
+                strokeWeight: 2,
+                strokeColor: '#d4380d',
+              },
+              zIndex: 999,
+            });
+            const userInfoWindow = new (window as any).google.maps.InfoWindow({
+              content: `<b>Vị trí của bạn</b>`
+            });
+            userInfoWindow.open(gmap, userMarker);
+            userMarker.addListener("click", () => userInfoWindow.open(gmap, userMarker));
+            bounds.extend(userLocation);
+          }
+          if (!bounds.isEmpty()) {
+            gmap.fitBounds(bounds);
+            // Nếu có nhiều marker, giảm zoom đi 1 để tránh bị sát rìa
+            if (customers.filter(c => c.latitude && c.longitude).length > 1) {
+              const listener = (window as any).google.maps.event.addListenerOnce(gmap, 'bounds_changed', function() {
+                gmap.setZoom(gmap.getZoom() - 1);
+              });
+            }
+          }
         }
       }
     }
     initMap();
     // eslint-disable-next-line
-  }, [lat, lng, customers]);
+  }, [lat, lng, customers, userLocation]);
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#f5f6fa' }}>
