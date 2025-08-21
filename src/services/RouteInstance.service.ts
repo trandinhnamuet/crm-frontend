@@ -23,6 +23,10 @@ class RouteInstanceService {
 	static delete(id: number) {
 		return httpService.delete(`/${id}`);
 	}
+
+	static createFromTemplate(templateId: number) {
+		return httpService.post(`/create-from-template/${templateId}`);
+	}
 }
 
 export default RouteInstanceService;
