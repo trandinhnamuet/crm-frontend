@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Typography, Spin, Upload, Button } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
+import GoogleAPIService from '../services/GoogleAPI.service';
+import RouteInstanceCustomerService from '../services/RouteInstanceCustomer.service';
 const { Title } = Typography;
-
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
 export default function RouteInstanceDetail() {
   // Tọa độ gốc để tính khoảng cách
@@ -50,38 +50,40 @@ export default function RouteInstanceDetail() {
     async function fetchCustomers() {
       setLoading(true);
       try {
-        const API_URL = import.meta.env.VITE_API_URL || '';
-        // Get route instance info
-        const routeRes = await fetch(`${API_URL}/route-instances/${routeInstanceId}`);
-        const routeData = routeRes.ok ? await routeRes.json() : null;
-        // Get mapped customers by template id
-        if (routeData && routeData.route_template_id) {
-          const res = await fetch(`${API_URL}/customers/by-route-template/${routeData.route_template_id}`);
-          const data = res.ok ? await res.json() : [];
-          setCustomers(data);
-          // Center map to first customer if exists
-          if (data.length > 0 && data[0].latitude && data[0].longitude) {
-            setLat(data[0].latitude);
-            setLng(data[0].longitude);
-          }
-          // Lấy khoảng cách xe máy cho từng customer
-          const newDistances: {[id: number]: string} = {};
-          await Promise.all(data.map(async (c: any) => {
-            if (c.latitude && c.longitude) {
-              try {
-                const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${baseLat},${baseLng}&destination=${c.latitude},${c.longitude}&mode=driving&key=${GOOGLE_MAPS_API_KEY}`;
-                const res = await fetch(url);
-                const result = await res.json();
-                if (result.routes && result.routes[0] && result.routes[0].legs && result.routes[0].legs[0]) {
-                  newDistances[c.id] = result.routes[0].legs[0].distance.text;
-                }
-              } catch {}
-            }
-          }));
-          setDistances(newDistances);
-        } else {
-          setCustomers([]);
+        // Get route instance customers directly
+        const routeInstanceCustomers = await RouteInstanceCustomerService.getByRouteInstance(Number(routeInstanceId));
+        
+        // Extract customer data from route instance customers
+        const customers = routeInstanceCustomers.map((ric: any) => ({
+          ...ric.customer,
+          route_instance_customer_id: ric.id,
+          is_visited: ric.is_visited,
+          checkin_at: ric.checkin_at,
+          checkout_at: ric.checkout_at,
+          note: ric.note
+        }));
+        
+        setCustomers(customers);
+        // Center map to first customer if exists
+        if (customers.length > 0 && customers[0].latitude && customers[0].longitude) {
+          setLat(customers[0].latitude);
+          setLng(customers[0].longitude);
         }
+        // Lấy khoảng cách xe máy cho từng customer
+        const newDistances: {[id: number]: string} = {};
+        const API_URL = import.meta.env.VITE_API_URL;
+        await Promise.all(customers.map(async (c: any) => {
+          if (c.latitude && c.longitude) {
+            try {
+              const res = await fetch(`${API_URL}/google-map/directions?origin=${baseLat},${baseLng}&destination=${c.latitude},${c.longitude}&mode=driving`);
+              const result = await res.json();
+              if (result.routes && result.routes[0] && result.routes[0].legs && result.routes[0].legs[0]) {
+                newDistances[c.id] = result.routes[0].legs[0].distance.text;
+              }
+            } catch {}
+          }
+        }));
+        setDistances(newDistances);
       } catch {
         setCustomers([]);
       }
@@ -90,23 +92,13 @@ export default function RouteInstanceDetail() {
     fetchCustomers();
   }, [routeInstanceId]);
 
-  // Load Google Maps script
-  function loadScript(src: string) {
-    return new Promise<void>((resolve) => {
-      if (document.querySelector(`script[src="${src}"]`)) return resolve();
-      const script = document.createElement("script");
-      script.src = src;
-      script.async = true;
-      script.onload = () => resolve();
-      document.body.appendChild(script);
-    });
-  }
+
 
   // Init map
   useEffect(() => {
     async function initMap() {
       if (lat && lng) {
-        await loadScript(`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}`);
+        await GoogleAPIService.loadJsApi();
         if (mapRef.current && (window as any).google) {
           const gmap = new (window as any).google.maps.Map(mapRef.current, {
             center: { lat, lng },
