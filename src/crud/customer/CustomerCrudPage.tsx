@@ -1,7 +1,8 @@
 import type { Customer } from './CustomerApi';
 import { useState, useEffect } from 'react';
 import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import CustomerForm from './CustomerForm';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from './CustomerApi';
 const { Title } = Typography;
@@ -11,6 +12,7 @@ export default function CustomerCrudPage() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
+  const navigate = useNavigate();
 
   async function fetchCustomers() {
     setLoading(true);
@@ -96,6 +98,7 @@ export default function CustomerCrudPage() {
       key: 'actions',
       render: (_: any, record: Customer) => (
         <Space>
+          <Button onClick={() => navigate(`/customer/${record.id}/history`)} type="link" icon={<HistoryOutlined />} />
           <Button onClick={() => openEdit(record)} type="link" icon={<EditOutlined />} />
           <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
         </Space>
