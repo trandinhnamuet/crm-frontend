@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { Table, Button, Modal, message, Typography, Space, Card, Row, Col } from 'antd';
+import CardList from '../../common/CardList';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import UserForm from './UserForm';
 import { getUsers, createUser, updateUser, deleteUser } from './UserApi';
@@ -11,6 +13,7 @@ export default function UserCrudPage() {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   async function fetchUsers() {
     setLoading(true);
@@ -82,8 +85,8 @@ export default function UserCrudPage() {
       key: 'actions',
       render: (_: any, record: User) => (
         <Space>
-          <Button onClick={() => openEdit(record)} type="link" icon={<EditOutlined />} />
-          <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); openEdit(record); }} type="link" icon={<EditOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); handleDelete(record.id); }} type="link" danger icon={<DeleteOutlined />} />
         </Space>
       ),
     },
@@ -101,21 +104,40 @@ export default function UserCrudPage() {
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm user</Button>
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={users}
-        rowKey="id"
-        loading={loading}
-        bordered
-        pagination={{ pageSize: 12 }}
-        scroll={{ x: 900 }}
-      />
+      {isMobile ? (
+        <CardList
+          data={users}
+          fields={[
+            { label: 'Username', render: (item) => item.username },
+            { label: 'ID', render: (item) => item.id },
+            { label: 'Full name', render: (item) => item.fullname || '' },
+            { label: 'Email', render: (item) => item.email || '' },
+            { label: 'Phone', render: (item) => item.phone_number || '' },
+            { label: 'Date of Birth', render: (item) => item.date_of_birth || '' },
+            { label: 'Created At', render: (item) => item.created_at ? new Date(item.created_at).toLocaleString() : '' },
+          ]}
+          actions={(item) => <>
+            <Button onClick={(e) => { e.stopPropagation(); openEdit(item); }} type="link" icon={<EditOutlined />} />
+            <Button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} type="link" danger icon={<DeleteOutlined />} />
+          </>}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={users}
+          rowKey="id"
+          loading={loading}
+          bordered
+          pagination={{ pageSize: 12 }}
+          scroll={{ x: 900 }}
+        />
+      )}
       <Modal
         open={modalOpen}
         title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật user' : 'Thêm user'}</span>}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         centered
         styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
       >

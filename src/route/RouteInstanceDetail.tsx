@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Typography, Spin, Upload, Button, Modal, Tag } from 'antd';
-import { CameraOutlined } from '@ant-design/icons';
+import { CameraOutlined, MenuOutlined, CloseOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useMediaQuery } from 'react-responsive';
 import GoogleAPIService from '../services/GoogleAPI.service';
 import RouteInstanceCustomerService from '../services/RouteInstanceCustomer.service';
 const { Title } = Typography;
 
 export default function RouteInstanceDetail() {
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
+  const [sidebarVisible, setSidebarVisible] = useState(!isMobile);
+  
   // Tọa độ gốc để tính khoảng cách
   const baseLat = 21.059837298011082;
   const baseLng = 105.70958174452157;
@@ -201,9 +205,39 @@ export default function RouteInstanceDetail() {
   }, [lat, lng, customers, userLocation]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh', background: '#f5f6fa' }}>
-      <div style={{ width: 350, overflowY: 'auto', background: '#fff', borderRight: '1px solid #eee', padding: 16 }}>
-        <Title level={4} style={{ marginBottom: 16 }}>Khách hàng theo lộ trình</Title>
+    <div style={{ display: 'flex', height: '100vh', background: '#f5f6fa', position: 'relative' }}>
+      {/* Toggle button cho mobile - luôn ở góc trái trên */}
+      {isMobile && (
+        <Button
+          icon={sidebarVisible ? <CloseOutlined /> : <MenuOutlined />}
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+          style={{
+            position: 'fixed',
+            top: 60,
+            left: 16,
+            zIndex: 1000,
+            background: '#fff',
+            border: '1px solid #d9d9d9',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          }}
+          size="large"
+        />
+      )}
+      
+      {/* Sidebar - ẩn hiện trên mobile */}
+      <div style={{ 
+        width: isMobile ? (sidebarVisible ? '100%' : '0') : '350px',
+        overflowY: 'auto', 
+        background: '#fff', 
+        borderRight: '1px solid #eee', 
+        padding: sidebarVisible ? 16 : 0,
+        transition: isMobile ? 'width 0.3s ease' : 'none',
+        position: isMobile ? 'fixed' : 'relative',
+        height: '100vh',
+        zIndex: 999,
+        display: sidebarVisible ? 'block' : 'none'
+      }}>
+        <Title level={4} style={{ marginBottom: 16, marginTop: isMobile ? 80 : 0 }}>Khách hàng theo lộ trình</Title>
         {loading ? <Spin /> : customers.length === 0 ? (
           <div style={{ color: '#888', textAlign: 'center' }}>Không có khách hàng nào</div>
         ) : (
@@ -235,7 +269,11 @@ export default function RouteInstanceDetail() {
           })
         )}
       </div>
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ 
+        flex: 1, 
+        position: 'relative',
+        marginLeft: isMobile && sidebarVisible ? '0' : '0'
+      }}>
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       </div>
       {/* Modal customer detail */}
@@ -245,7 +283,7 @@ export default function RouteInstanceDetail() {
         footer={null}
         centered
         width={400}
-        destroyOnClose
+        destroyOnHidden
         title={selectedCustomer ? selectedCustomer.name : ''}
       >
         {selectedCustomer && (

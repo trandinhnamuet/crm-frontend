@@ -1,6 +1,8 @@
 import type { Customer } from './CustomerApi';
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
+import CardList from '../../common/CardList';
 import { PlusOutlined, EditOutlined, DeleteOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import CustomerForm from './CustomerForm';
@@ -13,6 +15,7 @@ export default function CustomerCrudPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Customer | null>(null);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   async function fetchCustomers() {
     setLoading(true);
@@ -98,9 +101,9 @@ export default function CustomerCrudPage() {
       key: 'actions',
       render: (_: any, record: Customer) => (
         <Space>
-          <Button onClick={() => navigate(`/customer/${record.id}/history`)} type="link" icon={<HistoryOutlined />} />
-          <Button onClick={() => openEdit(record)} type="link" icon={<EditOutlined />} />
-          <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); navigate(`/customer/${record.id}/history`); }} type="link" icon={<HistoryOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); openEdit(record); }} type="link" icon={<EditOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); handleDelete(record.id); }} type="link" danger icon={<DeleteOutlined />} />
         </Space>
       ),
     },
@@ -118,21 +121,49 @@ export default function CustomerCrudPage() {
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm khách hàng</Button>
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={customers}
-        rowKey="id"
-        loading={loading}
-        bordered
-        pagination={{ pageSize: 12 }}
-        scroll={{ x: 1200 }}
-      />
+      {isMobile ? (
+        <CardList
+          data={customers}
+          fields={[
+            { label: 'Tên khách hàng', render: (item) => item.name },
+            { label: 'ID', render: (item) => item.id },
+            { label: 'Mã khách hàng', render: (item) => item.code || '' },
+            { label: 'SĐT', render: (item) => item.phone_number || '' },
+            { label: 'Email', render: (item) => item.email || '' },
+            { label: 'Địa chỉ', render: (item) => {
+              const { latitude, longitude, address } = item;
+              if (latitude && longitude) {
+                const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                return <a href={url} target="_blank" rel="noopener noreferrer">{address}</a>;
+              }
+              return address || '';
+            }},
+            { label: 'Ghi chú', render: (item) => item.note || '' },
+            { label: 'Hoạt động', render: (item) => item.is_active ? '✔️' : '❌' },
+          ]}
+          actions={(item) => <>
+            <Button onClick={(e) => { e.stopPropagation(); navigate(`/customer/${item.id}/history`); }} type="link" icon={<HistoryOutlined />} />
+            <Button onClick={(e) => { e.stopPropagation(); openEdit(item); }} type="link" icon={<EditOutlined />} />
+            <Button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} type="link" danger icon={<DeleteOutlined />} />
+          </>}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={customers}
+          rowKey="id"
+          loading={loading}
+          bordered
+          pagination={{ pageSize: 12 }}
+          scroll={{ x: 1200 }}
+        />
+      )}
       <Modal
         open={modalOpen}
         title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật khách hàng' : 'Thêm khách hàng'}</span>}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         centered
         styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
       >

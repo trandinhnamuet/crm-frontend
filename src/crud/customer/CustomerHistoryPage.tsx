@@ -1,6 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { Table, Card, Typography, Image, Tag } from 'antd';
+import CardList from '../../common/CardList';
 import RouteInstanceCustomerService from '../../services/RouteInstanceCustomer.service';
 
 const { Title } = Typography;
@@ -10,6 +12,7 @@ export default function CustomerHistoryPage() {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageMap, setImageMap] = useState<{[key: number]: any[]}>({});
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   useEffect(() => {
     if (customerId) {
@@ -125,14 +128,60 @@ export default function CustomerHistoryPage() {
   return (
     <Card style={{ margin: 24 }}>
       <Title level={2}>Lịch sử thăm khách hàng #{customerId}</Title>
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-        pagination={{ pageSize: 10 }}
-        scroll={{ x: 1000 }}
-      />
+      {isMobile ? (
+        <CardList
+          data={data}
+          fields={[
+            { label: 'Tuyến', render: (item) => item.route_instance?.route_template?.name || '-' },
+            { label: 'ID', render: (item) => item.id },
+            { label: 'Nhân viên phụ trách', render: (item) => item.route_instance?.assignedEmployee?.fullname || '-' },
+            { label: 'Giờ Checkin', render: (item) => item.checkin_at ? new Date(item.checkin_at).toLocaleString() : '-' },
+            { label: 'Giờ Checkout', render: (item) => item.checkout_at ? new Date(item.checkout_at).toLocaleString() : '-' },
+            { label: 'Đã thăm', render: (item) => (
+              <Tag color={item.is_visited ? 'green' : 'red'}>
+                {item.is_visited ? 'Đã thăm' : 'Chưa thăm'}
+              </Tag>
+            )},
+            { label: 'Ghi chú', render: (item) => item.note || '-' },
+            { label: 'Ảnh', render: (item) => {
+              const images = imageMap[item.id] || [];
+              if (images.length === 0) return '-';
+              
+              return (
+                <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                  {images.slice(0, 3).map((img: any) => (
+                    <Image
+                      key={img.id}
+                      src={img.link}
+                      alt={`Image ${img.id}`}
+                      width={30}
+                      height={30}
+                      style={{ objectFit: 'cover', borderRadius: 4 }}
+                      preview={{
+                        src: img.link
+                      }}
+                    />
+                  ))}
+                  {images.length > 3 && (
+                    <span style={{ fontSize: 12, color: '#666', alignSelf: 'center' }}>
+                      +{images.length - 3}
+                    </span>
+                  )}
+                </div>
+              );
+            }},
+          ]}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={loading}
+          pagination={{ pageSize: 10 }}
+          scroll={{ x: 1000 }}
+        />
+      )}
     </Card>
   );
 }

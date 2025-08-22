@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useMediaQuery } from 'react-responsive';
 import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
+import CardList from '../../common/CardList';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import RouteTemplateForm from './RouteTemplateForm';
 import { getRouteTemplates, createRouteTemplate, updateRouteTemplate, deleteRouteTemplate } from './RouteTemplateApi';
@@ -12,6 +14,7 @@ export default function RouteTemplateCrudPage() {
   const [allCustomers, setAllCustomers] = useState([]);
   const [selectedAddCustomers, setSelectedAddCustomers] = useState<number[]>([]);
   const [addCustomerLoading, setAddCustomerLoading] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   async function showAddCustomer(routeTemplate: RouteTemplate) {
     setSelectedRouteTemplate(routeTemplate);
@@ -163,11 +166,11 @@ export default function RouteTemplateCrudPage() {
       key: 'actions',
       render: (_: any, record: RouteTemplate) => (
         <Space>
-          <Button onClick={() => openEdit(record)} type="link" icon={<EditOutlined />} />
-          <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
-          <Button onClick={() => showCustomers(record)} type="link">Khách hàng</Button>
-          <Button onClick={() => showAddCustomer(record)} type="link" style={{ color: '#52c41a' }}>Thêm khách hàng</Button>
-          <Button onClick={() => handleScheduleNow(record)} type="link" style={{ color: '#1890ff' }}>Lên lịch ngay</Button>
+          <Button onClick={(e) => { e.stopPropagation(); openEdit(record); }} type="link" icon={<EditOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); handleDelete(record.id); }} type="link" danger icon={<DeleteOutlined />} />
+          <Button onClick={(e) => { e.stopPropagation(); showCustomers(record); }} type="link">Khách hàng</Button>
+          <Button onClick={(e) => { e.stopPropagation(); showAddCustomer(record); }} type="link" style={{ color: '#52c41a' }}>Thêm khách hàng</Button>
+          <Button onClick={(e) => { e.stopPropagation(); handleScheduleNow(record); }} type="link" style={{ color: '#1890ff' }}>Lên lịch ngay</Button>
         </Space>
       ),
     },
@@ -186,21 +189,45 @@ export default function RouteTemplateCrudPage() {
           <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm route template</Button>
         </Col>
       </Row>
-      <Table
-        columns={columns}
-        dataSource={routeTemplates}
-        rowKey="id"
-        loading={loading}
-        bordered
-        pagination={{ pageSize: 12 }}
-        scroll={{ x: 900 }}
-      />
+      {isMobile ? (
+        <CardList
+          data={routeTemplates}
+          fields={[
+            { label: 'Tên lộ trình', render: (item) => item.name },
+            { label: 'ID', render: (item) => item.id },
+            { label: 'Mã lộ trình', render: (item) => item.code || '' },
+            { label: 'Người phụ trách', render: (item) => item.assignedEmployee?.fullname || '' },
+            { label: 'Ngày bắt đầu', render: (item) => item.start_date || '' },
+            { label: 'Ngày kết thúc', render: (item) => item.end_date || '' },
+            { label: 'Kiểu lặp lại', render: (item) => item.repeat_type || '' },
+            { label: 'Số tuần/ngày lặp lại', render: (item) => item.repeat_on || '' },
+            { label: 'Hoạt động', render: (item) => item.is_active ? '✔️' : '❌' },
+          ]}
+          actions={(item) => <>
+            <Button onClick={(e) => { e.stopPropagation(); openEdit(item); }} type="link" icon={<EditOutlined />} />
+            <Button onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }} type="link" danger icon={<DeleteOutlined />} />
+            <Button onClick={(e) => { e.stopPropagation(); showCustomers(item); }} type="link" size="small">Khách hàng</Button>
+            <Button onClick={(e) => { e.stopPropagation(); showAddCustomer(item); }} type="link" style={{ color: '#52c41a' }} size="small">Thêm KH</Button>
+            <Button onClick={(e) => { e.stopPropagation(); handleScheduleNow(item); }} type="link" style={{ color: '#1890ff' }} size="small">Lên lịch</Button>
+          </>}
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={routeTemplates}
+          rowKey="id"
+          loading={loading}
+          bordered
+          pagination={{ pageSize: 12 }}
+          scroll={{ x: 900 }}
+        />
+      )}
       <Modal
         open={modalOpen}
         title={<span className="text-xl font-semibold text-blue-600">{editing ? 'Cập nhật route template' : 'Thêm route template'}</span>}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         centered
         styles={{ body: { padding: 0, background: '#f9fafb', borderRadius: 12 } }}
       >
@@ -214,7 +241,7 @@ export default function RouteTemplateCrudPage() {
         title={<span className="text-lg font-semibold text-blue-600">Danh sách khách hàng gắn với lộ trình</span>}
         onCancel={() => setCustomerModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         centered
       >
         <div style={{ padding: 16 }}>
@@ -255,7 +282,7 @@ export default function RouteTemplateCrudPage() {
         title={<span className="text-lg font-semibold text-green-600">Thêm khách hàng vào lộ trình</span>}
         onCancel={() => setAddCustomerModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         centered
       >
         <div style={{ padding: 16 }}>

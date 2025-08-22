@@ -12,6 +12,7 @@ import RouteInstanceCustomerDetail from './route/RouteInstanceCustomer/RouteInst
 import RouteInstanceDetail from './route/RouteInstanceDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomerHistoryPage from './crud/customer/CustomerHistoryPage';
+import UserDetail from './crud/user/UserDetail';
 
 export default function Router() {
   return (
@@ -24,6 +25,7 @@ export default function Router() {
         }>
           <Route path="/" element={<App />} />
           <Route path="/user" element={<UserCrudPage />} />
+          <Route path="/user/:id" element={<UserDetail />} />
           <Route path="/route-template" element={<RouteTemplateCrudPage />} />
           <Route path="/customer" element={<CustomerCrudPage />} />
           <Route path="/customer/:customerId/history" element={<CustomerHistoryPage />} />

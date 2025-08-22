@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Typography, Button, Upload, Image, Spin, Row, Col, message } from 'antd';
-import { CameraOutlined, CheckCircleOutlined, LogoutOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { CameraOutlined, CheckCircleOutlined, LogoutOutlined, ArrowLeftOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import RouteInstanceCustomerService from '../../services/RouteInstanceCustomer.service';
 
@@ -86,6 +86,16 @@ export default function RouteInstanceCustomerDetail() {
     }
   };
 
+  const handleDirections = () => {
+    if (customer?.customer?.address) {
+      const encodedAddress = encodeURIComponent(customer.customer.address);
+      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}`;
+      window.open(googleMapsUrl, '_blank');
+    } else {
+      message.warning('Không có địa chỉ để chỉ đường');
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -153,51 +163,78 @@ export default function RouteInstanceCustomerDetail() {
       </Card>
 
       <Card title="Hành động" style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-          <Upload
-            showUploadList={false}
-            accept="image/*"
-            beforeUpload={(file) => {
-              handleUploadImage(file);
-              return false;
-            }}
-            disabled={uploading}
-          >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
             <Button
-              icon={<CameraOutlined />}
-              type="primary"
-              loading={uploading}
-              style={{ background: '#722ed1', borderColor: '#722ed1' }}
+              icon={<EnvironmentOutlined />}
+              type="default"
+              style={{ 
+                borderColor: '#1677ff',
+                color: '#1677ff',
+                height: 40,
+                width: '100%',
+                maxWidth: 220
+              }}
+              onClick={handleDirections}
             >
-              Chụp/Chọn ảnh
+              Chỉ đường Google Maps
             </Button>
-          </Upload>
-          <Button
-            icon={<CheckCircleOutlined />}
-            type="primary"
-            style={{ 
-              background: customer?.checkin_at ? '#d9d9d9' : '#52c41a',
-              borderColor: customer?.checkin_at ? '#d9d9d9' : '#52c41a',
-              color: customer?.checkin_at ? '#888' : undefined
-            }}
-            onClick={handleCheckin}
-            disabled={!!customer?.checkin_at}
-          >
-            Checkin
-          </Button>
-          <Button
-            icon={<LogoutOutlined />}
-            type="primary"
-            style={{ 
-              background: customer?.checkout_at ? '#d9d9d9' : '#1677ff',
-              borderColor: customer?.checkout_at ? '#d9d9d9' : '#1677ff',
-              color: customer?.checkout_at ? '#888' : undefined
-            }}
-            onClick={handleCheckout}
-            disabled={!!customer?.checkout_at}
-          >
-            Checkout
-          </Button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 0 }}>
+            <Upload
+              showUploadList={false}
+              accept="image/*"
+              beforeUpload={(file) => {
+                handleUploadImage(file);
+                return false;
+              }}
+              disabled={uploading}
+            >
+              <Button
+                icon={<CameraOutlined />}
+                type="primary"
+                loading={uploading}
+                style={{ background: '#722ed1', borderColor: '#722ed1', width: 220, height: 36, fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                Chụp/Chọn ảnh
+              </Button>
+            </Upload>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Button
+              icon={<CheckCircleOutlined />}
+              type="primary"
+              style={{ 
+                background: customer?.checkin_at ? '#d9d9d9' : '#52c41a',
+                borderColor: customer?.checkin_at ? '#d9d9d9' : '#52c41a',
+                color: customer?.checkin_at ? '#888' : undefined,
+                height: 40,
+                flex: 1,
+                minWidth: 0
+              }}
+              onClick={handleCheckin}
+              disabled={!!customer?.checkin_at}
+            >
+              Checkin
+            </Button>
+            <Button
+              icon={<LogoutOutlined />}
+              type="primary"
+              style={{ 
+                background: customer?.checkout_at ? '#d9d9d9' : '#1677ff',
+                borderColor: customer?.checkout_at ? '#d9d9d9' : '#1677ff',
+                color: customer?.checkout_at ? '#888' : undefined,
+                height: 40,
+                flex: 1,
+                minWidth: 0
+              }}
+              onClick={handleCheckout}
+              disabled={!!customer?.checkout_at}
+            >
+              Checkout
+            </Button>
+          </div>
+          
         </div>
       </Card>
 

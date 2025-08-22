@@ -45,6 +45,26 @@ export default function App() {
         const customers = await CustomerService.getAll();
         const validCustomers = customers.filter((c: any) => c.latitude && c.longitude);
         const bounds = new (window as any).google.maps.LatLngBounds();
+        validCustomers.forEach((customer: any) => {
+          const marker = new (window as any).google.maps.Marker({
+            position: { lat: customer.latitude, lng: customer.longitude },
+            map: gmap,
+            title: customer.name,
+          });
+          const infoWindow = new (window as any).google.maps.InfoWindow({
+            content: `<div><b>${customer.name}</b><br/>${customer.phone_number}</div>`
+          });
+          // Mở sẵn label khi load map
+          infoWindow.open(gmap, marker);
+          marker.addListener('click', () => {
+            infoWindow.open(gmap, marker);
+          });
+          // Đóng infoWindow khi click ra ngoài
+          gmap.addListener('click', () => {
+            infoWindow.close();
+          });
+          bounds.extend(marker.getPosition());
+        });
         if (validCustomers.length > 0) {
           gmap.fitBounds(bounds);
         }
