@@ -3,6 +3,7 @@ import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import RouteTemplateForm from './RouteTemplateForm';
 import { getRouteTemplates, createRouteTemplate, updateRouteTemplate, deleteRouteTemplate } from './RouteTemplateApi';
+import RouteInstanceService from './RouteInstanceService';
 import type { RouteTemplate } from './RouteTemplateApi';
 const { Title } = Typography;
 
@@ -137,10 +138,20 @@ export default function RouteTemplateCrudPage() {
     });
   }
 
+  async function handleScheduleNow(routeTemplate: RouteTemplate) {
+    try {
+      await RouteInstanceService.createFromTemplate(routeTemplate.id);
+      message.success('Đã lên lịch thành công!');
+    } catch (e: any) {
+      message.error(e.message || 'Lỗi khi lên lịch');
+    }
+  }
+
   const columns = [
     { title: 'ID', dataIndex: 'id', key: 'id' },
     { title: 'Mã lộ trình', dataIndex: 'code', key: 'code' },
     { title: 'Tên lộ trình', dataIndex: 'name', key: 'name' },
+    { title: 'Người phụ trách', key: 'assignedEmployee', render: (_: any, record: RouteTemplate) => record.assignedEmployee?.fullname || '' },
     { title: 'Ngày bắt đầu', dataIndex: 'start_date', key: 'start_date' },
     { title: 'Ngày kết thúc', dataIndex: 'end_date', key: 'end_date' },
     { title: 'Kiểu lặp lại', dataIndex: 'repeat_type', key: 'repeat_type' },
@@ -156,10 +167,12 @@ export default function RouteTemplateCrudPage() {
           <Button onClick={() => handleDelete(record.id)} type="link" danger icon={<DeleteOutlined />} />
           <Button onClick={() => showCustomers(record)} type="link">Khách hàng</Button>
           <Button onClick={() => showAddCustomer(record)} type="link" style={{ color: '#52c41a' }}>Thêm khách hàng</Button>
+          <Button onClick={() => handleScheduleNow(record)} type="link" style={{ color: '#1890ff' }}>Lên lịch ngay</Button>
         </Space>
       ),
     },
   ];
+
 
   return (
     <Card style={{ margin: 24 }} bordered={false}>

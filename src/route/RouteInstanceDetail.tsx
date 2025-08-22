@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Spin, Upload, Button } from 'antd';
+import { Card, Typography, Spin, Upload, Button, Modal, Tag } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import GoogleAPIService from '../services/GoogleAPI.service';
 import RouteInstanceCustomerService from '../services/RouteInstanceCustomer.service';
 const { Title } = Typography;
 
 export default function RouteInstanceDetail() {
+  const navigate = useNavigate();
   // Tọa độ gốc để tính khoảng cách
   const baseLat = 21.059837298011082;
   const baseLng = 105.70958174452157;
@@ -54,7 +56,7 @@ export default function RouteInstanceDetail() {
         const routeInstanceCustomers = await RouteInstanceCustomerService.getByRouteInstance(Number(routeInstanceId));
         
         // Extract customer data from route instance customers
-        const customers = routeInstanceCustomers.map((ric: any) => ({
+        let customers = routeInstanceCustomers.map((ric: any) => ({
           ...ric.customer,
           route_instance_customer_id: ric.id,
           is_visited: ric.is_visited,
@@ -62,7 +64,20 @@ export default function RouteInstanceDetail() {
           checkout_at: ric.checkout_at,
           note: ric.note
         }));
-        
+
+        // Sắp xếp theo is_visited (false -> true), sau đó theo khoảng cách chim bay
+        customers = customers.sort((a: any, b: any) => {
+          if (a.is_visited !== b.is_visited) {
+            return a.is_visited ? 1 : -1;
+          }
+          if (a.latitude && a.longitude && b.latitude && b.longitude) {
+            const distA = calcDistance(baseLat, baseLng, a.latitude, a.longitude);
+            const distB = calcDistance(baseLat, baseLng, b.latitude, b.longitude);
+            return distA - distB;
+          }
+          return 0;
+        });
+
         setCustomers(customers);
         // Center map to first customer if exists
         if (customers.length > 0 && customers[0].latitude && customers[0].longitude) {
@@ -108,9 +123,9 @@ export default function RouteInstanceDetail() {
           customers.forEach((c) => {
             if (c.latitude && c.longitude) {
               let icon = undefined;
-              if (c.id % 2 === 1) {
+              if (c.is_visited) {
                 icon = {
-                  path: (window as any).google.maps.SymbolPath.CIRCLE ,
+                  path: (window as any).google.maps.SymbolPath.CIRCLE,
                   scale: 8,
                   fillColor: '#52c41a',
                   fillOpacity: 1,
@@ -122,15 +137,28 @@ export default function RouteInstanceDetail() {
                 position: { lat: c.latitude, lng: c.longitude },
                 map: gmap,
                 title: c.name,
-                icon,
+                ...(icon ? { icon } : {}),
               });
               bounds.extend({ lat: c.latitude, lng: c.longitude });
               const infowindow = new (window as any).google.maps.InfoWindow({
                 content: `<b>${c.name}</b><br/>${c.address}`,
               });
-              // Show info window by default
-              infowindow.open(gmap, marker);
-              marker.addListener("click", () => infowindow.open(gmap, marker));
+              let isOpen = false;
+              // Nếu chưa đi thì show popup mặc định
+              if (!c.is_visited) {
+                infowindow.open(gmap, marker);
+                isOpen = true;
+              }
+              // Click: toggle popup
+              marker.addListener("click", () => {
+                if (isOpen) {
+                  infowindow.close();
+                  isOpen = false;
+                } else {
+                  infowindow.open(gmap, marker);
+                  isOpen = true;
+                }
+              });
             }
           });
           // Cắm marker vị trí hiện tại của user
@@ -188,7 +216,12 @@ export default function RouteInstanceDetail() {
               motorbikeDistance = distances[c.id] || '';
             }
             return (
-              <Card key={c.id} style={{ marginBottom: 12, cursor: 'pointer' }} onClick={() => { setSelectedCustomer(c); setNote(''); setImageUrl(null); setModalOpen(true); }}>
+              <Card key={c.id} style={{ marginBottom: 12, cursor: 'pointer', position: 'relative' }} onClick={() => { 
+                navigate(`/route-instance-customer/${c.route_instance_customer_id}`);
+              }}>
+                <div style={{ position: 'absolute', top: 8, right: 12, zIndex: 2 }}>
+                  <Tag color={c.is_visited ? 'green' : 'red'}>{c.is_visited ? 'Đã đi' : 'Chưa đi'}</Tag>
+                </div>
                 <div style={{ fontWeight: 600 }}>{c.name}</div>
                 <div style={{ color: '#555' }}>{c.address}</div>
                 <div style={{ fontSize: 13, color: '#888' }}>{c.phone_number}</div>
@@ -206,27 +239,17 @@ export default function RouteInstanceDetail() {
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
       </div>
       {/* Modal customer detail */}
-      {selectedCustomer && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0,0,0,0.25)',
-            zIndex: 1000,
-            display: modalOpen ? 'flex' : 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-          onClick={() => setModalOpen(false)}
-        >
-          <div
-            style={{ background: '#fff', borderRadius: 12, minWidth: 350, maxWidth: 400, padding: 24, boxShadow: '0 2px 16px #0002' }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ fontWeight: 600, fontSize: 20, marginBottom: 8 }}>{selectedCustomer.name}</div>
+      <Modal
+        open={modalOpen && !!selectedCustomer}
+        onCancel={() => setModalOpen(false)}
+        footer={null}
+        centered
+        width={400}
+        destroyOnClose
+        title={selectedCustomer ? selectedCustomer.name : ''}
+      >
+        {selectedCustomer && (
+          <>
             <div style={{ color: '#555', marginBottom: 8 }}>{selectedCustomer.address}</div>
             <div style={{ fontSize: 13, color: '#888', marginBottom: 8 }}>{selectedCustomer.phone_number}</div>
             <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>{selectedCustomer.email}</div>
@@ -244,14 +267,25 @@ export default function RouteInstanceDetail() {
               <Upload
                 showUploadList={false}
                 accept="image/*"
-                beforeUpload={file => {
+                beforeUpload={async (file) => {
                   setUploading(true);
-                  const reader = new FileReader();
-                  reader.onload = () => {
-                    setImageUrl(reader.result as string);
+                  try {
+                    // Upload file to server
+                    const uploadResult = await RouteInstanceCustomerService.uploadImage(file, selectedCustomer.id);
+                    console.log('Upload result:', uploadResult);
+                    
+                    // Show image preview
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      setImageUrl(reader.result as string);
+                      setUploading(false);
+                    };
+                    reader.readAsDataURL(file);
+                  } catch (error) {
+                    console.error('Upload failed:', error);
                     setUploading(false);
-                  };
-                  reader.readAsDataURL(file);
+                    alert('Upload ảnh thất bại!');
+                  }
                   return false; // prevent upload
                 }}
                 disabled={uploading}
@@ -281,9 +315,9 @@ export default function RouteInstanceDetail() {
                 disabled={uploading}
               >Checkout</Button>
             </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </Modal>
     </div>
   );
 }

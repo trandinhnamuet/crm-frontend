@@ -1,4 +1,17 @@
 
+
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  fullname: string;
+  phone_number: string;
+  date_of_birth: string;
+  email: string;
+  image_id: number;
+  created_at: string;
+}
+
 export interface RouteTemplate {
   id: number;
   code: string;
@@ -14,6 +27,8 @@ export interface RouteTemplate {
   deleted_by: number | null;
   deleted_at: string | null;
   is_active: boolean;
+  assignedEmployeeId?: number;
+  assignedEmployee?: User;
 }
 
 export interface RouteInstance {
@@ -24,6 +39,8 @@ export interface RouteInstance {
   end_date?: string;
   is_finished: boolean;
   created_at?: string;
+  assignedEmployeeId?: number;
+  assignedEmployee?: User;
 }
 
 const API_URL = `${import.meta.env.VITE_API_URL}/route-instances`;

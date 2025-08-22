@@ -8,8 +8,10 @@ import RouteInstanceCrudPage from './crud/route-instance/RouteInstanceCrudPage';
 import Register from './auth/Register';
 import Login from './auth/Login';
 import AppLayout from './AppLayout';
+import RouteInstanceCustomerDetail from './route/RouteInstanceCustomer/RouteInstanceCustomerDetail';
 import RouteInstanceDetail from './route/RouteInstanceDetail';
 import ProtectedRoute from './components/ProtectedRoute';
+import CustomerHistoryPage from './crud/customer/CustomerHistoryPage';
 
 export default function Router() {
   return (
@@ -24,8 +26,10 @@ export default function Router() {
           <Route path="/user" element={<UserCrudPage />} />
           <Route path="/route-template" element={<RouteTemplateCrudPage />} />
           <Route path="/customer" element={<CustomerCrudPage />} />
+          <Route path="/customer/:customerId/history" element={<CustomerHistoryPage />} />
           <Route path="/route-instance" element={<RouteInstanceCrudPage />} />
           <Route path="/route-instance-detail/:id" element={<RouteInstanceDetail />} />
+          <Route path="/route-instance-customer/:routeInstanceCustomerId" element={<RouteInstanceCustomerDetail />} />
         </Route>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />

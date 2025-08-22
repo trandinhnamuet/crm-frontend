@@ -74,6 +74,7 @@ export default function RouteInstanceCrudPage() {
     { title: 'Tên lộ trình', key: 'route_template_name', render: (_: any, record: RouteInstance) => record.route_template?.name || '' },
     { title: 'Code', key: 'route_template_code', render: (_: any, record: RouteInstance) => record.route_template?.code || '' },
     { title: 'Repeat type', key: 'route_template_repeat_type', render: (_: any, record: RouteInstance) => record.route_template?.repeat_type || '' },
+    { title: 'Người phụ trách', key: 'assignedEmployee', render: (_: any, record: RouteInstance) => record.assignedEmployee?.fullname || '' },
     { title: 'Ngày bắt đầu', dataIndex: 'start_date', key: 'start_date' },
     { title: 'Ngày kết thúc', dataIndex: 'end_date', key: 'end_date' },
     { title: 'Đã hoàn thành', dataIndex: 'is_finished', key: 'is_finished', render: (v: boolean) => v ? '✔️' : '❌' },
@@ -98,11 +99,6 @@ export default function RouteInstanceCrudPage() {
           <Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>Quản lý Đi Tuyến</Title>
         </Col>
       </Row>
-      <Row justify="end" style={{ marginBottom: 16 }}>
-        <Col>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>Thêm route instance</Button>
-        </Col>
-      </Row>
       <Table
         columns={columns}
         dataSource={routeInstances}
@@ -125,7 +121,6 @@ export default function RouteInstanceCrudPage() {
           <RouteInstanceForm initial={editing || {}} onSubmit={handleSubmit} onCancel={() => setModalOpen(false)} />
         </div>
       </Modal>
-      <Button onClick={() => console.log(routeInstances)}>Log Route Instances</Button>
     </Card>
   );
 }
