@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Form, Input, Button, DatePicker, message, Spin, Card } from 'antd';
 import UserService from '../../services/User.service';
 import dayjs from 'dayjs';
