@@ -39,6 +39,7 @@ export default function RouteInstanceCustomerDetail() {
       const imageList = await RouteInstanceCustomerService.getImagesByRouteInstanceCustomer(Number(routeInstanceCustomerId));
       setImages(imageList);
     } catch (error) {
+      setImages([]);
       console.error('Failed to fetch images:', error);
     }
   };
