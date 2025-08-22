@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, Button, Modal, message, Space, Card, Row, Col, Typography } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import RouteInstanceForm from './RouteInstanceForm';
 import { getRouteInstances, createRouteInstance, updateRouteInstance, deleteRouteInstance } from './RouteInstanceApi';
 import type { RouteInstance } from './RouteInstanceApi';
@@ -26,11 +26,6 @@ export default function RouteInstanceCrudPage() {
   useEffect(() => {
     fetchRouteInstances();
   }, []);
-
-  function openCreate() {
-    setEditing(null);
-    setModalOpen(true);
-  }
 
   function openEdit(routeInstance: RouteInstance) {
     setEditing(routeInstance);

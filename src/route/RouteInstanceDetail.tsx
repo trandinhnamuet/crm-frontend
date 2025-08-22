@@ -24,7 +24,7 @@ export default function RouteInstanceDetail() {
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
-  const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
+  const [selectedCustomer] = useState<any | null>(null);
   const [note, setNote] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [uploading, setUploading] = useState(false);

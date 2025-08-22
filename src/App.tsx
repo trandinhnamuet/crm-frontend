@@ -1,21 +1,16 @@
 import { useRef, useEffect, useState } from "react";
 import './App.css';
-import { Button, Layout } from 'antd';
 import CustomerService from './services/Customer.service';
 
 // Add types for google.maps to avoid TypeScript errors
 type GoogleMap = any;
-type GoogleMarker = any;
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 console.log("Google Maps API Key:", GOOGLE_MAPS_API_KEY);
 
 export default function App() {
-  const { Content } = Layout;
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<GoogleMap | null>(null);
-  const [marker, setMarker] = useState<GoogleMarker | null>(null);
-  const [customerMarkers, setCustomerMarkers] = useState<any[]>([]);
 
   // Hà Nội mặc định
   const lat = 21.0285;
@@ -50,7 +45,6 @@ export default function App() {
         map: gmap,
         title: "Marker",
       });
-      setMarker(gmarker);
 
       // Lấy danh sách customer và cắm mốc
       try {
@@ -76,7 +70,6 @@ export default function App() {
         if (validCustomers.length > 0) {
           gmap.fitBounds(bounds);
         }
-        setCustomerMarkers(markers);
       } catch (e) {
         // eslint-disable-next-line no-console
         console.error('Không lấy được danh sách customer', e);

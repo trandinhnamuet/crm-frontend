@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, Typography, Button, Upload, Image, Spin, Row, Col, message } from 'antd';
-import { CameraOutlined, CheckCircleOutlined, LogoutOutlined, ArrowLeftOutlined, DownloadOutlined } from '@ant-design/icons';
+import { CameraOutlined, CheckCircleOutlined, LogoutOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import RouteInstanceCustomerService from '../../services/RouteInstanceCustomer.service';
 
