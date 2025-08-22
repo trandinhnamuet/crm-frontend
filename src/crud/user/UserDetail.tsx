@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form, Input, Button, DatePicker, message, Spin, Upload, Card } from 'antd';
+import { Form, Input, Button, DatePicker, message, Spin, Card } from 'antd';
 import UserService from '../../services/User.service';
 import dayjs from 'dayjs';
 
@@ -8,7 +8,6 @@ const dateFormat = 'DD-MM-YYYY';
 
 const UserDetail = () => {
 	const { id } = useParams();
-	const navigate = useNavigate();
 	const [form] = Form.useForm();
 	const [loading, setLoading] = useState(false);
 	const [user, setUser] = useState<any>(null);
